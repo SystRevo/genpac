@@ -52,6 +52,12 @@ __DIRECT_RULES__
 #! Generated: __GENERATED__
 #! GFWList: __GFWLIST_DETAIL__
 '''
+UNBOUND = '''
+#! __GENPAC__
+__UNBOUND__
+#! Generated: __GENERATED__
+#! GFWList: __GFWLIST_DETAIL__
+'''
 
 # 去除文本模板的前后换行符
 for name in dir():

@@ -334,3 +334,34 @@ class FmtPotatso(FmtBase):
             '__DIRECT_RULES__': ',\n'.join(direct_rules),
             '__GFWED_RULES__': ',\n'.join(gfwed_rules)})
         return self.replace(self.tpl, replacements)
+
+@formater('unbound')
+class FmtUnbound(FmtBase):
+    _default_tpl = tpl.UNBOUND
+    _default_dns = '127.0.0.1#53'
+
+    def __init__(self, *args, **kwargs):
+        super(FmtUnbound, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def arguments(cls, parser):
+        group = parser.add_argument_group(
+            title=cls._name.upper(),
+            description='Unbound用来作为无污染DNS服务器')
+        group.add_argument(
+            '--forward', metavar='DNS',
+            help='生成规则域名查询使用的DNS服务器，格式: HOST@PORT\n'
+                 '默认: {}'.format(cls._default_dns))
+
+    @classmethod
+    def config(cls, options):
+        options['forward'] = {'default': cls._default_dns}
+
+    def generate(self, replacements):
+        dns = self.options.forward
+
+        forward_zone = 'forward-zone:\n    name:\"{}\"\n    forward-addr:{}\n'
+        zones = [forward_zone.format(s, dns) for s in self.gfwed_domains]
+
+        replacements.update({'__UNBOUND__': '\n'.join(zones).strip()})
+        return self.replace(self.tpl, replacements)
