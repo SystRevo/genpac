@@ -93,6 +93,12 @@ WINGY:
                         生成规则使用的adapter ID
 ```
 
+UNBOUND:
+  Unbound用来作为无污染DNS服务器
+
+  --unbound-forward DNS         生成规则域名查询使用的DNS服务器，格式: HOST@PORT
+                        默认: 127.0.0.1#53
+
 ### 配置文件
 
 支持通过 `--config-from` 参数读入配置信息，配置文件书写方法可参考[sample/config.ini][]

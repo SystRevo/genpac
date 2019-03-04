@@ -152,12 +152,26 @@ class FmtPAC(FmtBase):
         return super(FmtPAC, self).pre_generate()
 
     def generate(self, replacements):
-        rules = json.dumps(
-            self.precise_rules if self.options.pac_precise else self.rules,
-            indent=None if self.options.pac_compress else 4,
-            separators=(',', ':') if self.options.pac_compress else None)
-        replacements.update({'__PROXY__': self.options.pac_proxy,
-                             '__RULES__': rules})
+        indent = None if self.options.pac_compress else 4
+        seperators = (',', ':') if self.options.pac_compress else None
+        if self.options.pac_precise:
+            rules = json.dumps(self.precise_rules, 
+                indent=indent, separators=seperators)
+            
+            replacements.update({'__PROXY__': self.options.pac_proxy,
+                                '__RULES__': rules})
+        
+        else:
+            gfwed = json.dumps(self.gfwed_domains, 
+                indent=indent, separators=seperators)
+            
+            ignored = json.dumps(self.ignored_domains, 
+                indent=indent, separators=seperators)
+
+            replacements.update({'__PROXY__': self.options.pac_proxy,
+                                '__IGNORED_DOMAINS__': ignored, 
+                                '__GFWED_DOMAINS__' : gfwed})
+
         return self.replace(self.tpl, replacements)
 
 
@@ -349,7 +363,7 @@ class FmtUnbound(FmtBase):
             title=cls._name.upper(),
             description='Unbound用来作为无污染DNS服务器')
         group.add_argument(
-            '--forward', metavar='DNS',
+            '--unbound-forward', metavar='DNS',
             help='生成规则域名查询使用的DNS服务器，格式: HOST@PORT\n'
                  '默认: {}'.format(cls._default_dns))
 

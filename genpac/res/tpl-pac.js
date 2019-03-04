@@ -5,40 +5,32 @@
  * GFWList From: __GFWLIST_FROM__
  */
 
-var proxy = '__PROXY__';
-var rules = __RULES__;
+let directList = __IGNORED_DOMAINS__
+let gfwedList = __GFWED_DOMAINS__
 
-var lastRule = '';
+directList = new Set(directList)
+gfwedList = new Set(gfwedList)
+
+const PROXY = '__PROXY__';
+const DIRECT = "DIRECT"
 
 function FindProxyForURL(url, host) {
-    for (var i = 0; i < rules.length; i++) {
-        ret = testHost(host, i);
-        if (ret != undefined)
-            return ret;
-    }
-    return 'DIRECT';
+    res = testHost(host);
+    if (res) return res
+    return DIRECT
 }
 
-function testHost(host, index) {
-    for (var i = 0; i < rules[index].length; i++) {
-        for (var j = 0; j < rules[index][i].length; j++) {
-            lastRule = rules[index][i][j];
-            if (host == lastRule || host.endsWith('.' + lastRule))
-                return i % 2 == 0 ? 'DIRECT' : proxy;
-        }
-    }
-    lastRule = '';
+function testHost(host) {
+    if (checkRulesFast(host, directList)) return DIRECT
+    if (checkRulesFast(host, gfwedList)) return PROXY
+    return null
 }
 
-// REF: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
-if (!String.prototype.endsWith) {
-    String.prototype.endsWith = function(searchString, position) {
-        var subjectString = this.toString();
-        if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
-            position = subjectString.length;
-        }
-        position -= searchString.length;
-        var lastIndex = subjectString.indexOf(searchString, position);
-        return lastIndex !== -1 && lastIndex === position;
-  };
+function checkRulesFast(host, rules) {
+    do {
+        if (rules.has(host)) return true
+        off = host.indexOf(".") + 1
+        host = host.slice(off)
+    } while (off >= 1)
+    return false
 }
